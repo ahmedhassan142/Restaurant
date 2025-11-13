@@ -1,18 +1,20 @@
-// app/api/categories/[id]/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import connectDB from '@/lib/mongodb';
-import Category from '@/models/Category';
+import Category from '@/models/category';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // Await the params promise
+    const { id } = await params;
+    
     await connectDB();
     
-    const category = await Category.findById(params.id)
+    const category = await Category.findById(id)
       .populate('parent', 'name slug')
       .populate('children', 'name slug order isActive')
       .lean();
@@ -36,9 +38,12 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // Await the params promise
+    const { id } = await params;
+    
     const session = await getServerSession(authOptions);
     
     if (!session || (session.user.role !== 'admin' && session.user.role !== 'manager')) {
@@ -48,7 +53,7 @@ export async function PUT(
     await connectDB();
     const body = await request.json();
 
-    const category = await Category.findById(params.id);
+    const category = await Category.findById(id);
     
     if (!category) {
       return NextResponse.json(
@@ -114,9 +119,12 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // Await the params promise
+    const { id } = await params;
+    
     const session = await getServerSession(authOptions);
     
     if (!session || session.user.role !== 'admin') {
@@ -125,7 +133,7 @@ export async function DELETE(
 
     await connectDB();
 
-    const category = await Category.findById(params.id);
+    const category = await Category.findById(id);
     
     if (!category) {
       return NextResponse.json(
@@ -150,7 +158,7 @@ export async function DELETE(
       );
     }
 
-    await Category.findByIdAndDelete(params.id);
+    await Category.findByIdAndDelete(id);
 
     return NextResponse.json({
       message: 'Category deleted successfully'

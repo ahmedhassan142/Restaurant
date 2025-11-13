@@ -1,7 +1,7 @@
 // app/api/featured/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
-import FeaturedItem from '@/models/FeaturedItem';
+import FeaturedItem from '@/models/Featureditem';
 
 export async function GET() {
   try {
