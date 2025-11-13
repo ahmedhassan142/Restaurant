@@ -1,4 +1,3 @@
-// app/api/featured/[id]/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
@@ -7,12 +6,15 @@ import FeaturedItem from '@/models/Featureditem';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // Await the params promise
+    const { id } = await params;
+    
     await connectDB();
     
-    const featuredItem = await FeaturedItem.findById(params.id)
+    const featuredItem = await FeaturedItem.findById(id)
       .populate('menuItem')
       .lean();
 
@@ -35,9 +37,12 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // Await the params promise
+    const { id } = await params;
+    
     const session = await getServerSession(authOptions);
     
     if (!session || (session.user.role !== 'admin' && session.user.role !== 'manager')) {
@@ -47,7 +52,7 @@ export async function PUT(
     await connectDB();
     const body = await request.json();
 
-    const featuredItem = await FeaturedItem.findById(params.id);
+    const featuredItem = await FeaturedItem.findById(id);
     
     if (!featuredItem) {
       return NextResponse.json(
@@ -85,9 +90,12 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // Await the params promise
+    const { id } = await params;
+    
     const session = await getServerSession(authOptions);
     
     if (!session || session.user.role !== 'admin') {
@@ -96,7 +104,7 @@ export async function DELETE(
 
     await connectDB();
 
-    const featuredItem = await FeaturedItem.findById(params.id);
+    const featuredItem = await FeaturedItem.findById(id);
     
     if (!featuredItem) {
       return NextResponse.json(
@@ -105,7 +113,7 @@ export async function DELETE(
       );
     }
 
-    await FeaturedItem.findByIdAndDelete(params.id);
+    await FeaturedItem.findByIdAndDelete(id);
 
     return NextResponse.json({
       message: 'Featured item deleted successfully'
