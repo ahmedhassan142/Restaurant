@@ -117,8 +117,8 @@ export const authOptions: AuthOptions = {
     }
   },
   pages: {
-    signIn: '/oginin',
-    signUp: '/signup',
+    signIn: '/login',
+  
     
   },
   session: {
